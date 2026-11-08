@@ -1,0 +1,436 @@
+Here is your updated index.html file containing your App ID (34U2h4W9vYZa1PkvVwXAI), full OAuth integration, live tick chart rendering, dynamic market loading, and real-time execution controls.
+Copy the code below, replace everything inside your index.html file on GitHub, and save it.
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apexflow Market Dollar Hunters 📉📊✅ | Jamal Ehaldart — The King of Multi-Market Execution 👑</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .pulse-green { animation: pulseGreen 1.5s infinite; }
+        @keyframes pulseGreen {
+            0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+        .chart-glow { filter: drop-shadow(0px 0px 8px rgba(34, 197, 94, 0.4)); }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col">
+
+    <!-- Top Navigation Bar -->
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center font-bold text-emerald-400">
+                    👑
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-sm md:text-lg tracking-wide text-slate-100">
+                        APEXFLOW <span class="text-emerald-400">MARKET DOLLAR HUNTERS</span> 📉📊✅
+                    </h1>
+                    <p class="text-xs text-slate-400 font-mono">Ehaldart Global FX & Binary • Jamal Ehaldart</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <div id="connectionStatus" class="flex items-center space-x-2 bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700 text-xs">
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+                    <span class="text-slate-300 font-mono">Connecting...</span>
+                </div>
+                <button id="authBtn" onclick="handleAuth()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition flex items-center space-x-2">
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                    <span id="authBtnText">Connect Deriv Account</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Dashboard Area -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Left & Center Panel: Market Selection, Chart & Live Proposals -->
+        <div class="lg:col-span-2 space-y-6">
+            
+            <!-- Market & Account Bar -->
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-wrap gap-4 justify-between items-center">
+                <div class="flex-1 min-w-[200px]">
+                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Select Market Instrument</label>
+                    <select id="marketSelect" onchange="changeSymbol()" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-emerald-400 font-semibold focus:outline-none focus:border-emerald-500">
+                        <option value="">Loading Markets...</option>
+                    </select>
+                </div>
+                
+                <div class="flex items-center space-x-6 bg-slate-950 border border-slate-800 px-4 py-2 rounded-lg">
+                    <div>
+                        <div class="text-[10px] text-slate-400 uppercase font-semibold">Account Balance</div>
+                        <div id="userBalance" class="text-base font-mono font-bold text-slate-200">-- USD</div>
+                    </div>
+                    <div>
+                        <div class="text-[10px] text-slate-400 uppercase font-semibold">Active Price</div>
+                        <div id="livePrice" class="text-base font-mono font-bold text-emerald-400">0.0000</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SVG Real-Time Tick Chart -->
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 relative overflow-hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-sm font-semibold text-slate-300 flex items-center space-x-2">
+                        <i class="fa-solid fa-chart-line text-emerald-400"></i>
+                        <span>High-Frequency Tick Execution Feed</span>
+                    </h2>
+                    <span id="chartSymbol" class="text-xs font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded">
+                        R_100
+                    </span>
+                </div>
+                
+                <div class="w-full h-64 bg-slate-950 rounded-lg border border-slate-800/80 p-2 relative">
+                    <svg id="tickChart" class="w-full h-full chart-glow" preserveAspectRatio="none">
+                        <path id="chartPath" d="" fill="none" stroke="#10b981" stroke-width="2.5" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Execution Panel -->
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <h3 class="text-sm font-bold text-slate-200 uppercase tracking-wider">Execution Parameters</h3>
+                    <div class="flex space-x-2">
+                        <button onclick="setContractType('RISE_FALL')" id="btnRiseFall" class="px-3 py-1 rounded text-xs font-semibold bg-emerald-600 text-white">Rise / Fall</button>
+                        <button onclick="setContractType('DIGITS')" id="btnDigits" class="px-3 py-1 rounded text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white">Digits</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Stake ($)</label>
+                        <input id="stakeInput" type="number" value="10" min="1" oninput="requestProposal()" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm font-mono text-slate-100 focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Duration (Ticks)</label>
+                        <input id="durationInput" type="number" value="5" min="1" max="10" oninput="requestProposal()" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm font-mono text-slate-100 focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div class="col-span-2 md:col-span-1">
+                        <label class="block text-xs text-slate-400 mb-1">Potential Payout</label>
+                        <div id="proposalPayout" class="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm font-mono text-emerald-400 font-bold">
+                            $0.00
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Buy Buttons -->
+                <div class="grid grid-cols-2 gap-4 pt-2">
+                    <button onclick="executeTrade('CALL')" class="bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl font-extrabold text-sm tracking-wide shadow-lg shadow-emerald-950/50 transition transform active:scale-95 flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-arrow-trend-up"></i>
+                        <span>PURCHASE RISE</span>
+                    </button>
+                    <button onclick="executeTrade('PUT')" class="bg-rose-600 hover:bg-rose-500 text-white py-3 rounded-xl font-extrabold text-sm tracking-wide shadow-lg shadow-rose-950/50 transition transform active:scale-95 flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-arrow-trend-down"></i>
+                        <span>PURCHASE FALL</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Panel: Open Positions & Execution History -->
+        <div class="space-y-6">
+            
+            <!-- Open Positions -->
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+                <h2 class="text-sm font-bold text-slate-200 uppercase tracking-wider mb-4 flex items-center space-x-2">
+                    <i class="fa-solid fa-bolt text-amber-400"></i>
+                    <span>Active Contracts</span>
+                </h2>
+                <div id="activeContractsList" class="space-y-3">
+                    <div class="text-xs text-slate-500 text-center py-6 border border-dashed border-slate-800 rounded-lg">
+                        No active contracts running.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trade History -->
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+                <h2 class="text-sm font-bold text-slate-200 uppercase tracking-wider mb-4 flex items-center space-x-2">
+                    <i class="fa-solid fa-clock-rotate-left text-slate-400"></i>
+                    <span>Settled Trades</span>
+                </h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-400">
+                        <thead class="bg-slate-950 text-slate-300 font-mono border-b border-slate-800">
+                            <tr>
+                                <th class="p-2">Type</th>
+                                <th class="p-2">Stake</th>
+                                <th class="p-2">Profit/Loss</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tradeHistoryTable" class="divide-y divide-slate-800/50 font-mono">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 bg-slate-950 py-4 mt-8">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500">
+            © 2026 Ehaldart Global FX & Binary. All rights reserved. • Apexflow Market Dollar Hunters
+        </div>
+    </footer>
+
+    <!-- Logic Engine -->
+    <script>
+        // Official Registered Application ID
+        const APP_ID = '34U2h4W9vYZa1PkvVwXAI';
+        let ws = null;
+        let currentSymbol = 'R_100';
+        let activeContractType = 'RISE_FALL';
+        let activeProposalId = null;
+        let tickHistory = [];
+        let authToken = null;
+
+        // Initialize Application
+        document.addEventListener('DOMContentLoaded', () => {
+            checkOAuthRedirect();
+            connectWebSocket();
+        });
+
+        // 1. WebSocket Initializer & Handler
+        function connectWebSocket() {
+            ws = new WebSocket(`wss://ws.derivws.com/websockets/v3?app_id=${APP_ID}`);
+
+            ws.onopen = () => {
+                updateConnectionStatus(true, 'Connected Live');
+                // Request Available Markets
+                ws.send(JSON.stringify({ active_symbols: 'brief', product_type: 'basic' }));
+                
+                // Authenticate if Token Available
+                if (authToken) {
+                    ws.send(JSON.stringify({ authorize: authToken }));
+                } else {
+                    subscribeTicks(currentSymbol);
+                }
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                handleIncomingMessage(data);
+            };
+
+            ws.onclose = () => {
+                updateConnectionStatus(false, 'Disconnected');
+                setTimeout(connectWebSocket, 3000);
+            };
+
+            ws.onerror = () => updateConnectionStatus(false, 'Connection Error');
+        }
+
+        // 2. Message Dispatcher
+        function handleIncomingMessage(data) {
+            const msgType = data.msg_type;
+
+            if (msgType === 'active_symbols') {
+                populateMarketList(data.active_symbols);
+            } else if (msgType === 'tick') {
+                updateTickFeed(data.tick);
+            } else if (msgType === 'authorize') {
+                if (data.error) {
+                    alert('Authentication failed: ' + data.error.message);
+                } else {
+                    document.getElementById('authBtnText').innerText = data.authorize.email;
+                    document.getElementById('userBalance').innerText = `${data.authorize.balance} ${data.authorize.currency}`;
+                    ws.send(JSON.stringify({ balance: 1, subscribe: 1 }));
+                    subscribeTicks(currentSymbol);
+                }
+            } else if (msgType === 'balance') {
+                document.getElementById('userBalance').innerText = `${data.balance.balance} ${data.balance.currency}`;
+            } else if (msgType === 'proposal') {
+                if (data.proposal) {
+                    activeProposalId = data.proposal.id;
+                    document.getElementById('proposalPayout').innerText = `$${data.proposal.payout}`;
+                }
+            } else if (msgType === 'buy') {
+                if (data.error) {
+                    alert('Order Error: ' + data.error.message);
+                } else {
+                    trackOpenContract(data.buy.contract_id);
+                }
+            } else if (msgType === 'proposal_open_contract') {
+                updateContractStatus(data.proposal_open_contract);
+            }
+        }
+
+        // 3. Populate Market List Dynamically
+        function populateMarketList(symbols) {
+            const select = document.getElementById('marketSelect');
+            select.innerHTML = '';
+            
+            const filtered = symbols.filter(s => s.market === 'synthetic_index' || s.market === 'forex');
+            filtered.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.symbol;
+                opt.innerText = `${s.display_name} (${s.symbol})`;
+                select.appendChild(opt);
+            });
+
+            if (filtered.length > 0) {
+                select.value = currentSymbol;
+            }
+        }
+
+        // 4. Tick Chart Engine
+        function subscribeTicks(symbol) {
+            ws.send(JSON.stringify({ forget_all: 'ticks' }));
+            tickHistory = [];
+            ws.send(JSON.stringify({ ticks: symbol }));
+            document.getElementById('chartSymbol').innerText = symbol;
+            requestProposal();
+        }
+
+        function changeSymbol() {
+            currentSymbol = document.getElementById('marketSelect').value;
+            subscribeTicks(currentSymbol);
+        }
+
+        function updateTickFeed(tick) {
+            document.getElementById('livePrice').innerText = parseFloat(tick.quote).toFixed(tick.pip_size || 4);
+            
+            tickHistory.push(tick.quote);
+            if (tickHistory.length > 30) tickHistory.shift();
+
+            renderSVGChart();
+        }
+
+        function renderSVGChart() {
+            if (tickHistory.length < 2) return;
+            const svg = document.getElementById('tickChart');
+            const path = document.getElementById('chartPath');
+            const width = svg.clientWidth;
+            const height = svg.clientHeight;
+
+            const min = Math.min(...tickHistory);
+            const max = Math.max(...tickHistory);
+            const range = (max - min) || 1;
+
+            const points = tickHistory.map((val, idx) => {
+                const x = (idx / (tickHistory.length - 1)) * width;
+                const y = height - ((val - min) / range) * (height - 20) - 10;
+                return `${x},${y}`;
+            });
+
+            path.setAttribute('d', `M ${points.join(' L ')}`);
+        }
+
+        // 5. Proposal & Trade Execution
+        function requestProposal() {
+            if (!ws || ws.readyState !== WebSocket.OPEN) return;
+            const stake = document.getElementById('stakeInput').value;
+            const duration = document.getElementById('durationInput').value;
+
+            ws.send(JSON.stringify({
+                proposal: 1,
+                amount: parseFloat(stake),
+                basis: 'stake',
+                contract_type: 'CALL',
+                currency: 'USD',
+                duration: parseInt(duration),
+                duration_unit: 't',
+                symbol: currentSymbol
+            }));
+        }
+
+        function executeTrade(type) {
+            if (!authToken) {
+                alert('Please connect your Deriv account first.');
+                return;
+            }
+            const stake = document.getElementById('stakeInput').value;
+            const duration = document.getElementById('durationInput').value;
+
+            ws.send(JSON.stringify({
+                buy: 1,
+                price: parseFloat(stake),
+                parameters: {
+                    amount: parseFloat(stake),
+                    basis: 'stake',
+                    contract_type: type,
+                    currency: 'USD',
+                    duration: parseInt(duration),
+                    duration_unit: 't',
+                    symbol: currentSymbol
+                }
+            }));
+        }
+
+        function trackOpenContract(contractId) {
+            ws.send(JSON.stringify({
+                proposal_open_contract: 1,
+                contract_id: contractId,
+                subscribe: 1
+            }));
+        }
+
+        function updateContractStatus(contract) {
+            const container = document.getElementById('activeContractsList');
+            if (contract.is_sold) {
+                // Log to history
+                const tr = document.createElement('tr');
+                const profitClass = contract.profit >= 0 ? 'text-emerald-400' : 'text-rose-400';
+                tr.innerHTML = `
+                    <td class="p-2">${contract.contract_type}</td>
+                    <td class="p-2">$${contract.buy_price}</td>
+                    <td class="p-2 ${profitClass} font-bold">$${contract.profit.toFixed(2)}</td>
+                `;
+                document.getElementById('tradeHistoryTable').prepend(tr);
+                container.innerHTML = `<div class="text-xs text-slate-500 text-center py-6 border border-dashed border-slate-800 rounded-lg">No active contracts running.</div>`;
+            } else {
+                container.innerHTML = `
+                    <div class="bg-slate-950 border border-emerald-500/40 rounded-lg p-3 space-y-2">
+                        <div class="flex justify-between text-xs">
+                            <span class="text-slate-400">${contract.display_name}</span>
+                            <span class="text-emerald-400 font-mono font-bold">RUNNING</span>
+                        </div>
+                        <div class="flex justify-between text-sm font-mono font-bold">
+                            <span>Stake: $${contract.buy_price}</span>
+                            <span class="${contract.profit >= 0 ? 'text-emerald-400' : 'text-rose-400'}">P/L: $${contract.profit.toFixed(2)}</span>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // 6. OAuth Connection Setup
+        function handleAuth() {
+            const redirectUri = window.location.origin + window.location.pathname;
+            const oauthUrl = `https://oauth.deriv.com/oauth2/authorize?app_id=${APP_ID}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+            window.location.href = oauthUrl;
+        }
+
+        function checkOAuthRedirect() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const token1 = urlParams.get('token1');
+            if (token1) {
+                authToken = token1;
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }
+
+        function updateConnectionStatus(isConnected, text) {
+            const badge = document.getElementById('connectionStatus');
+            if (isConnected) {
+                badge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 pulse-green"></span><span class="text-emerald-400 font-mono font-semibold">${text}</span>`;
+            } else {
+                badge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span><span class="text-rose-400 font-mono font-semibold">${text}</span>`;
+            }
+        }
+    </script>
+</body>
+</html>
+
